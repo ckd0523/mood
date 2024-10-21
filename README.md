@@ -1,5 +1,5 @@
 # mood
-
+# 게시판 프로젝트 [mood / 영화 정보 및 소통 플랫폼 구축]
 ![코드하우스 프로젝트 6조 Mood_1](https://github.com/user-attachments/assets/1093d864-63f1-4cb5-81b6-0ed27b2a0ed9)
 
 ![코드하우스 프로젝트 6조 Mood_2](https://github.com/user-attachments/assets/3fcd6eb2-b991-492d-b228-5dec7b028812)
