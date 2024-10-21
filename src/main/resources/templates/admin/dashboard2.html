@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous" type="text/javascript"></script>
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <!--<link href="/static/css/sb-admin-2.min.css" rel="stylesheet">-->
+
+    <link rel="stylesheet" href="https://uicdn.toast.com/chart/latest/toastui-chart.min.css" />
+
+    <title>Dashboard</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+        }
+        .content-container {
+            margin-left: 250px; /* Ensure this matches the sidebar width */
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        .content {
+            width: 100%;
+            max-width: 900px; /* Adjust this to control the width of the centered content */
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header.html"></div>
+<div id="wrapper" class="content-container">
+    <div class="content">
+        <!--    content-wrapper-->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div class="content">
+                <!-- Begin Page Content-->
+                <div class="container-fluid">
+                    <!-- Page heading-->
+                    <div class="d-sm-flex align-items-center justify-content-between mb-3">
+                        <h1 class="h3 mb-0 text-gray-800" style="font-weight: bold">Dashboard</h1>
+                    </div>
+                    <div id="chart-area"></div>
+                    <div id="chart-area2"></div>
+                <div>
+                    <p>가장 좋아요 수가 많은 게시글 보러 가기</p>
+                        <div th:if="${mostLikedBoard} != null" th:each="board : ${mostLikedBoard}">
+                            <a th:href="@{'/board/' + ${board.bno}}" th:text="${board.title}"></a>
+                        </div>
+                    <p>가장 방문자 수가 많은 게시글 보러 가기</p>
+                        <div th:if="${mostVisitedBoard} != null" th:each="board : ${mostVisitedBoard}">
+                            <a th:href="@{'/board/' + ${board.bno}}" th:text="${board.title}"></a>
+                        </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script src="https://uicdn.toast.com/chart/latest/toastui-chart.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $.ajax({
+            url: '/board/admin/api/dashboard2/data',
+            type: 'GET',
+            success: function(response) {
+                const el = document.getElementById('chart-area');
+                const data = {
+                    categories: ['카테고리별 좋아요 수'],
+                    series: response,
+                };
+                const options = {
+                    chart: { title: '카테고리별 좋아요 수', width: 600, height: 400 },
+                };
+
+                const chart = toastui.Chart.pieChart({ el, data, options });
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+
+        $.ajax({
+            url: '/board/admin/api/dashboard2/data2',
+            type: 'GET',
+            success: function(response) {
+                const el = document.getElementById('chart-area2');
+                const data = {
+                    categories: ['카테고리별 방문자 수'],
+                    series: response,
+                };
+                const options = {
+                    chart: { title: '카테고리별 방문자 수', width: 600, height: 400 },
+                };
+
+                const chart = toastui.Chart.pieChart({ el, data, options });
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    });
+
+</script>
+</body>
+</html>

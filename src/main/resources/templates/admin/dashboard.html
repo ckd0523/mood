@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous" type="text/javascript"></script>
+    <!-- Chart.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.4/Chart.min.js"></script>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="/static/css/sb-admin-2.min.css" rel="stylesheet">
+
+    <title>Dashboard</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+        }
+        .content-container {
+            margin-left: 250px; /* Ensure this matches the sidebar width */
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        .content {
+            width: 100%;
+            max-width: 900px; /* Adjust this to control the width of the centered content */
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header.html"></div>
+<div id="wrapper" class="content-container">
+    <div class="content">
+        <!--    content-wrapper-->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div class="content">
+                <!-- Begin Page Content-->
+                <div class="container-fluid">
+                    <!-- Page heading-->
+                    <div class="d-sm-flex align-items-center justify-content-between mb-3">
+                        <h1 class="h3 mb-0 text-gray-800" style="font-weight: bold">Dashboard</h1>
+                    </div>
+                    <!-- content row-->
+                    <div class="row">
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Visitors (Total)
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                <p th:text="${total}"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-primary shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Visitors (today)
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                <p th:text="${today}"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-success shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Users (Total)
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                <p th:text="${userCount}"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-xl-3 col-md-6 mb-4">
+                            <div class="card border-info shadow h-100 py-2">
+                                <div class="card-body">
+                                    <div class="row no-gutters align-items-center">
+                                        <div class="col mr-2">
+                                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                                Boards (Total)
+                                            </div>
+                                            <div class="h5 mb-0 font-weight-bold text-gray-800">
+                                                <p th:text="${boardCount}"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="visit">
+                                <canvas id="visitChart" height="250" width="250"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function() {
+        function getLastWeekDates() {
+            const dates = [];
+            const now = new Date();
+            for (let i = 6; i >= 0; i--) {
+                const date = new Date();
+                date.setDate(now.getDate() - i);
+                const year = date.getFullYear();
+                const month = ('0' + (date.getMonth() + 1)).slice(-2);
+                const day = ('0' + date.getDate()).slice(-2);
+                dates.push(`${year}-${month}-${day}`);
+            }
+            return dates;
+        }
+
+
+        // Example data
+        const visitArr2 = getLastWeekDates();
+        // const numArr = [10, 20, 15, 30, 25, 30, [[${today}]]]; // Replace with your actual data
+        const numArr = [[${visitData}]];
+
+
+        // Assign random colors to the chart
+        const rgb4 = [];
+        for (var i = 0; i < visitArr2.length; i++) {
+            let r = Math.floor(Math.random() * 256);
+            let g = Math.floor(Math.random() * 256);
+            let b = Math.floor(Math.random() * 256);
+            rgb4.push("rgb(" + r + "," + g + "," + b + ")");
+        }
+
+        var ctx4 = document.getElementById("visitChart").getContext('2d');
+        var chart4 = new Chart(ctx4, {
+            type: 'line',
+            data: {
+                labels: visitArr2,
+                datasets: [{
+                    label: "일일 방문자",
+                    backgroundColor: 'transparent',
+                    borderColor: 'red',
+                    data: numArr
+                }]
+            },
+            options: {
+                scales: {
+                    yAxes: [{
+                        ticks: {
+                            beginAtZero: true
+                        }
+                    }]
+                }
+            }
+        });
+    });
+</script>
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+</body>
+</html>

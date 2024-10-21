@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/thymeleaf-extras-springsecurity6">
+<head>
+    <meta charset="UTF-8">
+    <title>detail_board</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.6.347/pdf.min.js" integrity="sha512-Z8CqofpIcnJN80feS2uccz+pXWgZzeKxDsDNMD/dJ6997/LSRY+W4NmEt9acwR+Gt9OHN0kkI1CTianCwoqcjQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <style>
+        body {
+            height: 100%;
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            font-family: "Montserrat", sans-serif;
+        }
+        #page{
+            margin-left: 250px;
+            display: flex;
+            align-content: center;
+            background-color: #1D1E23;
+            height: 250px;
+            justify-content: center;
+            font-size: 50px;
+            color: white;
+            line-height: 250px;
+        }
+        .reply-reply {
+            display: none; /* 기본적으로 숨기기 */
+            margin-left: 20px;
+            padding-left: 10px;
+            border-left: 2px solid #ccc;
+        }
+        .reply-reply.visible {
+            display: block; /* visible 클래스가 추가되면 보이게 하기 */
+        }
+        section {
+            #heartbtn.material-symbols-outlined {
+                font-variation-settings: 'FILL' 100,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24;
+                cursor: pointer;
+                /*color: white;*/
+            }
+
+            .liked {
+                color: red;
+            }
+        }
+        div{
+            .material-symbols-outlined {
+                font-variation-settings: 'FILL' 0,
+                'wght' 400,
+                'GRAD' 0,
+                'opsz' 24;
+                cursor: pointer;
+                /*color: white;*/
+            }
+        }
+        .content-container {
+            margin-left: 250px; /* Ensure this matches the sidebar width */
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            background-color:#1D1E23;
+        }
+        .content {
+            width: 68%;
+            background-color: #F4F1EB;
+            padding: 50px;
+            border-radius: 10px; /* 모서리 둥글게 */
+
+        }
+        input {
+            background: #eee;
+            padding: 16px;
+            margin: 8px 0;
+            width: 85%;
+            border: 0;
+            outline: none;
+            border-radius: 20px;
+        }
+        label{
+            font-size: 16px;
+            font-weight: bold;
+        }
+        button{
+            border-radius: 20px !important;
+            border: none;
+            outline: none;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 10px 15px;
+            margin: 5px;
+            letter-spacing: 1px;
+            /*text-transform: uppercase;*/
+            cursor: pointer;
+            transition: transform 80ms ease-in;
+            background-color: #FFEFA0;
+        }
+    </style>
+</head>
+<body style="background-color:#1D1E23">
+<div class="sidebar" th:replace="fragments/header.html"></div>
+<span id="page" style="font-weight: bold">게시글 상세
+</span>
+<div class="content-container mt-5">
+    <div class="content">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="mb-8" style="display: flex; justify-content: space-between;">
+                    <div>
+                        <label for="title">제목</label>
+                        <span class="fs-5 mb-4" id="title" th:text="${board.title}"></span>
+                    </div>
+                    <div>
+                        <label for="writer"> 작성자</label>
+                        <input type="hidden" class="fs-5 mb-4" id="writer" th:value="${board.writer.uid}">
+                        <span class="fs-5 mb-4" id="nickname" th:text="${board.writer.nickname}"></span>
+                        <span class="material-symbols-outlined text-end" style="vertical-align: middle; display: inline-block">visibility</span>
+                        <span class="fs-5 mb-4" id="hit" th:text="${board.hit}"></span>
+                    </div>
+                </div>
+                <div>
+                    <label for="genre">장르</label>
+                    <span class="fs-5 mb-4" id="genre" th:text="${board.genre}+' 영화'"></span>
+                </div>
+                <section class="mb-5">
+                    <label>파일</label>
+                    <div th:each="file : ${files}">
+                        <br>
+                        <div th:if="${file.fileOrigin.endsWith('.jpg') or file.fileOrigin.endsWith('.jpeg') or file.fileOrigin.endsWith('.png') or file.fileOrigin.endsWith('.gif') or file.fileOrigin.endsWith('.svg') or file.fileOrigin.endsWith('.webp') or file.fileOrigin.endsWith('.ico')}">
+                            <!-- 이미지 파일인 경우 -->
+                            <img th:src="@{/file/{filename}(filename=${file.fileName})}" th:alt="${file.fileOrigin}" style="max-width: 100%; height: auto;">
+                        </div>
+                        <div th:if="${file.fileOrigin.endsWith('.pdf') or file.fileOrigin.endsWith('.mp4') or file.fileOrigin.endsWith('.webm') or file.fileOrigin.endsWith('.ogg') or file.fileOrigin.endsWith('.mp3') or file.fileOrigin.endsWith('.wav') or file.fileOrigin.endsWith('.html') or file.fileOrigin.endsWith('.htm')}">
+                            <!-- PDF 파일이나 동영상, 음악 파일인 경우 -->
+                            <iframe th:src="@{/file/{filename}(filename=${file.fileName})}" width="100%" height="600" frameborder="0"></iframe>
+<!--                            <iframe th:src="@{'/home/mood/board/file/' + ${file.fileName}}" width="100%" height="600" frameborder="0"></iframe>-->
+                        </div>
+                        <!-- 다른 형식의 파일은 다운로드 링크만 표시됩니다. -->
+                        <a th:text="${file.fileOrigin}"></a>
+                        <a th:href="@{/file/{filename}(filename=${file.fileName})}" th:download="${file.fileOrigin}">다운로드</a>
+                    </div>
+                </section>
+                <section class="mb-5">
+                    <label>본문</label>
+                    <p class="fs-5 mb-4" th:utext="${board.content}"></p>
+                </section>
+                <section class="mb-5">
+                    <div>
+                    <span th:object="${searchDto}" th:each="hash : ${hashes}" class="fs-5 mb-4" style="margin-right: 5px;">
+                        <a class="hash-btn" th:href="@{/boardList/0?searchBy=hash&searchQuery={searchQuery}(searchQuery=${hash.getHash()})}" th:text="'#' + ${hash.getHash()}"></a>
+
+                    </span>
+                    </div>
+                </section>
+                <section class="mb-5">
+                    <span class="material-symbols-outlined" id="heartbtn">favorite</span>
+                </section>
+                <input type="hidden" id="bno" th:value="${board.bno}">
+                <input type="hidden" id="uid" th:value="${user.uid}">
+                <div th:if="${board.writer.uid == currentUser}">
+                    <button type="button" id="modifyButton">수정</button>
+                    <button id="deleteButton">삭제</button>
+                </div>
+                <div sec:authorize = "hasAnyAuthority('ROLE_ADMIN')">
+                    <button id="admindeleteButton" class="admindeleteButton btn btn-danger">관리자 삭제</button>
+                </div>
+            </div>
+        </div>
+        <hr>
+        <section class="mb-5">
+            <input type="text" id="newreply" placeholder="댓글">
+            <button id="create-btn">등록</button>
+            <hr>
+            <div id="commentList"></div>
+            <div id="pagination"></div>
+        </section>
+    </div>
+</div>
+<script src="/reply.js"></script>
+<script>
+    const modBtn = document.getElementById('modifyButton');
+    if(modBtn)
+        modBtn.addEventListener('click', function() {
+            const bno = document.getElementById('bno').value;
+            window.location.href = '/board/modify/' + bno;
+        });
+
+    const delBtn = document.getElementById('deleteButton')
+    if(delBtn)
+        delBtn.addEventListener('click', function() {
+            const bno = document.getElementById('bno').value;
+
+            if (confirm('정말로 삭제하시겠습니까?')) {
+                $.ajax({
+                    url: '/board/delete',
+                    type: 'POST',
+                    data: { bno: bno },
+                    success: function(result) {
+                        alert('게시글이 삭제되었습니다.');
+                        window.location.href = '/boardList';
+                    },
+                    error: function(xhr, status, error) {
+                        toastr.error('삭제에 실패했습니다.');
+                    }
+                });
+            } else {
+                toastr.success('삭제가 취소되었습니다.');
+            }
+        });
+
+    //관리자 삭제
+    const adDelBtn = document.getElementById('admindeleteButton')
+    if(adDelBtn)
+        adDelBtn.addEventListener('click', function() {
+            const bno = document.getElementById('bno').value;
+            console.log(bno);
+            if (confirm('정말로 삭제하시겠습니까?')) {
+                $.ajax({
+                    url: 'admin/api/add/' + bno,
+                    type: 'POST',
+                    success: function(result) {
+                        console.log("첫 번째 요청이 성공적으로 처리되었습니다.");
+
+                        // 첫 번째 요청이 성공하면 두 번째 요청 실행
+                        $.ajax({
+                            url: '/board/delete',
+                            type: 'POST',
+                            data: { bno: bno },
+                            success: function(result) {
+                                alert('게시글이 삭제되었습니다.');
+                                window.location.href = '/admin/boardManagement';
+                            },
+                            error: function(xhr, status, error) {
+                                alert('삭제에 실패했습니다.');
+                            }
+                        });
+                    },
+                    error: function(xhr, status, error) {
+                        console.log("첫 번째 요청 처리 중 에러입니다.");
+                    }
+                });
+            } else {
+                alert('삭제가 취소되었습니다.');
+            }
+        });
+</script>
+</body>
+</html>

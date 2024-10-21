@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <title>게시글 관리</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@24,400,0,0" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" />
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+        }
+        .content-container {
+            margin-left: 250px; /* Ensure this matches the sidebar width */
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        .content {
+            width: 100%;
+            max-width: 900px; /* Adjust this to control the width of the centered content */
+        }
+        .material-symbols-outlined {
+            font-variation-settings:
+                    'FILL' 0,
+                    'wght' 400,
+                    'GRAD' 0,
+                    'opsz' 24
+        }
+    </style>
+
+</head>
+<body>
+<div class="sidebar" th:replace="~{fragments/header.html}"></div>
+<div class="content-container">
+    <div class="content">
+        <div>
+            <button style="display: inline-block; background-color: #FFEFA0; float:right; color: black" class="btn btn-secondary mt-3" th:if="${#authorization.expression('isAuthenticated()')}" type="button" onclick="location.href='/logout'">LOGOUT</button>
+            <button style="display: inline-block; background-color: #FFEFA0; float: right; color: black" class="btn btn-secondary mt-3" th:unless="${#authorization.expression('isAuthenticated()')}" type="button" onclick="location.href='newUser'">JOIN</button>
+            <button style="display: inline-block; background-color: #FFEFA0; float: right; color: black" class="btn btn-secondary mt-3" sec:authorize="isAnonymous()" type="button" onclick="location.href='/login'">LOGIN</button>
+            <h3>게시글 관리</h3>
+        </div>
+        <table class="table">
+            <colgroup>
+                <col style="width: 10%;"/>
+                <col style="width: auto;"/>
+                <col style="width: 10%" />
+                <col style="width: 15%" />
+            </colgroup>
+            <thead>
+            <tr>
+                <th scope="col" class="text-center">번호</th>
+                <th scope="col">제목</th>
+                <th scope="col" class="text-center">작성자</th>
+                <th scope="col" class="text-center">게시글 복원</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="adminBoard, idx : ${adminBoards}">
+                <td th:text="${adminBoard.bno}" class="text-center"></td>
+                <td>
+                    <a th:text="${adminBoard.title}"></a>
+                </td>
+                <td th:text="${adminBoard.writer}" class="text-center"></td>
+                <td><button class="restoreButton btn btn-danger" th:value="${adminBoard.bno}">복원하기</button></td>
+            </tr>
+
+            </tbody>
+        </table>
+
+    </div>
+</div>
+<script>
+    $(document).on('click', '.restoreButton', function() {
+        const bno = $(this).val();
+        console.log(bno);
+        if (confirm('정말로 복원하시겠습니까?')) {
+            $.ajax({
+                url: '/board/admin/api/board/restore/'+bno,
+                type: 'POST',
+                success: function(result) {
+                    alert('게시글이 복원되었습니다.');
+                    window.location.href = '/boardList';
+                },
+                error: function(xhr, status, error) {
+                    alert('복원에 실패했습니다.');
+                }
+            });
+        } else {
+            alert('복원이 취소되었습니다.');
+        }
+    });
+</script>
+</body>
+</html>
+

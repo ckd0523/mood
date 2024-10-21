@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <style>
+        body {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: "Montserrat", sans-serif;
+            background-color: #1D1E23;
+        }
+
+        .content-container {
+            margin-left: 250px;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(29, 30, 35, 1);
+        }
+
+        .content {
+            background-color: #F4F1EB;
+            display: flex;
+            width: 85%;
+            padding: 40px;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            height: 80%;
+            border-radius: 10px;
+        }
+
+        form {
+            background: #F4F1EB;
+            display: flex;
+            flex-direction: column;
+            padding: 30px;
+            width: 68%;
+            height: calc(100% - 65px);
+            border-radius: 10px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        input {
+            width: calc(100% - 75px);
+        }
+
+        textarea {
+            width: calc(100% - 75px);
+            height: 400px;
+        }
+
+        #editor {
+            width: calc(100% - 75px);
+            max-width: calc(100% - 140px);
+            height: 400px;
+        }
+
+        .form-group {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            width: 100px;
+            margin-right: 35px;
+            text-align: right;
+            margin-left: -30px;
+        }
+
+        .input-reduced-width, .form-control-textarea, .hashtags-container {
+            flex: 1;
+            max-width: calc(100% - 140px);
+        }
+
+        .dropzone {
+            width: calc(100% - 75px); /* input과 동일한 너비 */
+            max-width: calc(100% - 140px);
+            background-color: #F4F1EB; /* input과 동일한 배경색 */
+            border: 2px dashed #ccc; /* 드롭존의 테두리 설정 */
+            border-radius: 20px; /* 드롭존의 테두리 둥글게 */
+            padding: 16px; /* 드롭존의 패딩 설정 */
+            margin-top: 5px; /* 드롭존의 상단 마진 설정 */
+        }
+
+        input[type="file"] {
+            width: 280px;
+        }
+
+        .form-control {
+            flex: 1;
+        }
+
+        .form-control-textarea {
+            width: 400px !important;
+            height: 200px;
+        }
+
+        .submit-button:hover {
+            background-color: #e0d4a0;
+        }
+
+        #content {
+            height: 500px;
+        }
+
+        button {
+            width: 100%;
+            border-radius: 20px !important;
+            border: none;
+            outline: none;
+            font-size: 12px;
+            font-weight: bold;
+            padding: 10px 15px;
+            margin: 5px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: transform 80ms ease-in;
+            background-color: #FFEFA0;
+        }
+
+        .hashtags-container {
+            display: flex;
+            flex-wrap: wrap;
+        }
+
+        .hashtags-container input {
+            flex: 1;
+            margin-right: 10px;
+            min-width: 100px;
+        }
+
+        .hashtags-container input:last-child {
+            margin-right: 0;
+        }
+
+        #file-name {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        #file-name span {
+            display: inline-block;
+            background-color: #FFEFA0;
+            padding: 5px;
+            border-radius: 5px;
+            margin-right: 10px;
+        }
+
+        .fieldError {
+            color: red;
+            text-align: center;
+            margin-top: -10px;
+            margin-bottom: 10px;
+        }
+
+        .title-center-text {
+            text-align: center;
+        }
+
+        #page {
+            margin-left: 250px;
+            display: flex;
+            align-content: center;
+            background-color: #1D1E23;
+            justify-content: center;
+            font-size: 50px;
+            color: white;
+            line-height: 250px;
+        }
+
+        @media (max-width: 768px) {
+            form {
+                padding: 20px;
+                width: 100%;
+                height: auto;
+            }
+
+            .form-group {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .form-group label {
+                width: auto;
+                margin-right: 0;
+                margin-bottom: 5px;
+                text-align: left;
+                margin-left: 0;
+            }
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        #existing-files .file-item a {
+            margin-right: 10px;
+            display: inline-block;
+            width: 300px; /* Adjust max-width to allow space for the button */
+        }
+
+    </style>
+</head>
+<body style="background-color:#1D1E23">
+<link rel="stylesheet" href="https://unpkg.com/dropzone@5/dist/min/dropzone.min.css" type="text/css"/>
+<link rel="stylesheet" href="https://uicdn.toast.com/editor/latest/toastui-editor.css" />
+<div class="sidebar" th:replace="fragments/header.html"></div>
+<span id="page" style="font-weight: bold">게시글 수정</span>
+<div>
+    <div class="content-container">
+        <div class="content">
+                <input type="hidden" id="bno" th:value="${board.bno}">
+                <input type="hidden" id="deletedFiles" name="deletedFiles">
+            <div class="form-group">
+                <label>제목</label>
+                <input type="text" id="title" class="form-control input-reduced-width adjusted-margin-top title-center-text" name="title" th:value="${board.title}">
+            </div>
+
+            <div class="form-group">
+                <label for="genre">장르</label>
+                <select name="genre" id="genre">
+                    <option th:if="${board.genre} !=''" th:value="${board.genre}" th:text="${board.genre}"></option>
+                    <option th:if="${board.genre} ==''" value="">장르를 선택하세요.</option>
+                    <option th:if="${board.genre} !='액션'" value="액션">액션 영화</option>
+                    <option th:if="${board.genre} !='범죄'" value="범죄">범죄 영화</option>
+                    <option th:if="${board.genre} !='SF'" value="SF">SF 영화</option>
+                    <option th:if="${board.genre} !='코미디'" value="코미디">코미디 영화</option>
+                    <option th:if="${board.genre} !='슬랩스틱 코미디'" value="슬랩스틱 코미디">슬랩스틱 코미디 영화</option>
+                    <option th:if="${board.genre} !='로맨스 코미디'" value="로맨스 코미디">로맨스 코미디 영화</option>
+                    <option th:if="${board.genre} !='스릴러'" value="스릴러">스릴러 영화</option>
+                    <option th:if="${board.genre} !='공포'" value="공포">공포 영화</option>
+                    <option th:if="${board.genre} !='전쟁'" value="전쟁">전쟁 영화</option>
+                    <option th:if="${board.genre} !='스포츠'" value="스포츠">스포츠 영화</option>
+                    <option th:if="${board.genre} !='판타지'" value="판타지">판타지 영화</option>
+                    <option th:if="${board.genre} !='음악'" value="음악">음악 영화</option>
+                    <option th:if="${board.genre} !='뮤지컬'" value="뮤지컬">뮤지컬 영화</option>
+                    <option th:if="${board.genre} !='멜로'" value="멜로">멜로 영화</option>
+                    <option th:if="${board.genre} !='추리'" value="추리">추리 영화</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>현재 첨부된 파일:</label>
+                <div id="existing-files">
+                        <div th:each="file : ${files}" class="file-item">
+                                <a th:text="${file.fileOrigin}"></a>
+                                <input type="hidden" name="existingFiles" th:value="${file.fno}">
+                                <button type="button" th:onclick="'deleteFile2(' + ${file.fno} + ')'">삭제</button>
+                        </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>파일</label>
+                <div id="dropzone" class="dropzone"></div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">본문 내용</label>
+                <input type="hidden" id="content" th:value="${board.content}">
+                <div id="editor"></div>
+            </div>
+
+            <div class="form-group">
+                <label>해시 태그:</label>
+                <div class="hashtags-container">
+                    <input type="text" class="form-control" id="hashTags" name="hashTags[]" placeholder="HashTag" th:value="${hashes.size() > 0 ? hashes[0].hash : ''}">
+                    <input type="text" class="form-control" id="hashTags1" name="hashTags[]" placeholder="HashTag" th:value="${hashes.size() > 1 ? hashes[1].hash : ''}">
+                    <input type="text" class="form-control" id="hashTags2" name="hashTags[]" placeholder="HashTag" th:value="${hashes.size() > 2 ? hashes[2].hash : ''}">
+                    <input type="text" class="form-control" id="hashTags3" name="hashTags[]" placeholder="HashTag" th:value="${hashes.size() > 3 ? hashes[3].hash : ''}">
+                    <input type="text" class="form-control" id="hashTags4" name="hashTags[]" placeholder="HashTag" th:value="${hashes.size() > 4 ? hashes[4].hash : ''}">
+                </div>
+            </div>
+
+            <div class="button-container">
+                <button id="update" class="submit-button">수정</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://uicdn.toast.com/editor/latest/toastui-editor-all.min.js"></script>
+<script src="https://unpkg.com/dropzone@5/dist/min/dropzone.min.js"></script>
+<script>
+    Dropzone.autoDiscover = false;
+
+    let acceptedExtensions;
+    $(document).ready(function() {
+        // 서버에서 확장자 목록 가져오기
+        $.ajax({
+            url: '/board/admin/api/fileManagement',
+            type: 'GET',
+            success: function (response) {
+                acceptedExtensions = response.join(',');
+                console.log(`"${acceptedExtensions}"`);
+
+                // Dropzone 초기화
+                initializeDropzone();
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+
+        const Editor = toastui.Editor;
+        const editor = new Editor({
+            el: document.querySelector('#editor'),
+            initialEditType: 'wysiwyg',
+            previewStyle: 'vertical',
+            hooks: {
+                async addImageBlobHook(blob, callback) {
+                    try {
+                        const formData = new FormData();
+                        formData.append('image', blob);
+
+                        const response = await fetch('/tui-editor/image-upload', {
+                            method: 'POST',
+                            body: formData,
+                        });
+
+                        const filename = await response.text();
+                        console.log('서버에 저장된 파일명 : ', filename);
+
+                        const imageUrl = `/tui-editor/image-print?filename=${filename}`;
+                        callback(imageUrl, 'image alt attribute');
+
+                    } catch (error) {
+                        console.error('업로드 실패 : ', error);
+                    }
+                },
+            }
+        });
+        editor.setHTML($('#content').val());
+
+        let List = [];
+        let deletedFiles = [];
+
+        function initializeDropzone() {
+            if (!acceptedExtensions) {
+                console.error("acceptedExtensions 변수가 설정되지 않았습니다.");
+                return;
+            }
+
+            var myDropzone = new Dropzone("#dropzone", {
+                url: "/file/add",
+                method: "POST",
+                paramName: "uploadFiles",
+                maxFilesize: 2,
+                parallelUploads: 4,
+                acceptedFiles: acceptedExtensions,
+                addRemoveLinks: true,
+                autoProcessQueue: false,
+                dictDefaultMessage: "파일을 여기로 드래그하거나 클릭하여 업로드하세요.",
+                success: function(file, response) {
+                    List.push(response);
+                    console.log("성공적으로 업로드됨: ", response);
+                    console.log(List);
+
+                    if (myDropzone.getQueuedFiles().length === 0 && myDropzone.getUploadingFiles().length === 0) {
+                        updateForm();
+                    }
+                },
+                error: function(file, response) {
+                    console.log("업로드 실패: ", response);
+                }
+            });
+
+            $('#update').click(function(event) {
+                event.preventDefault();
+                deleteFile(deletedFiles);
+
+                if (myDropzone.getQueuedFiles().length > 0) {
+                    myDropzone.processQueue();
+                } else {
+                    updateForm();
+                }
+            });
+        }
+
+        function updateForm() {
+            var formData = {
+                title: $('#title').val(),
+                content: editor.getHTML(),
+                hashTags: [
+                    $('#hashTags').val(),
+                    $('#hashTags1').val(),
+                    $('#hashTags2').val(),
+                    $('#hashTags3').val(),
+                    $('#hashTags4').val()
+                ],
+                genre: $('#genre').val(),
+                files: List
+            };
+            const bno = $("#bno").val();
+
+            $.ajax({
+                url: '/api/board/edit/' + bno,
+                type: 'POST',
+                data: JSON.stringify(formData),
+                contentType: 'application/json',
+                success: function(response) {
+                    console.log(response);
+                    window.location.href = '/board/' + bno;
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        }
+
+        function deleteFile(deletedFiles) {
+            fetch('/api/delete-file', {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(deletedFiles)
+            }).catch(error => {
+                console.error('Error:', error);
+                alert('파일 삭제 중 오류가 발생했습니다.');
+            });
+        }
+
+        window.deleteFile2 = function(fno) {
+            if (confirm('파일을 삭제하시겠습니까?')) {
+                deletedFiles.push(fno);
+
+                var parentDiv = document.querySelector(`#existing-files input[value="${fno}"]`).parentElement;
+                console.log('찾은 부모 요소:', parentDiv);
+                if (parentDiv) {
+                    parentDiv.remove();
+                    console.log("파일 화면 삭제 확인");
+                    alert('파일이 목록에서 삭제되었습니다.');
+                } else {
+                    console.error('부모 파일 항목을 찾을 수 없습니다.');
+                }
+            }
+        }
+    });
+</script>
+</body>
+</html>

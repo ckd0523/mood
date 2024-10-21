@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" xmlns:sec="http://www.w3.org/1999/xhtml">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- jQuery -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js" integrity="sha512-bLT0Qm9VnAYZDflyKcBaQ2gg0hSYNQrJ8RilYldYQ1FxQYoCLtUjuuRuZo+fjqhx/qtq/1itJ0C2ejDxltZVFg==" crossorigin="anonymous" type="text/javascript"></script>
+    <!-- Chart.js -->
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- Custom styles for this template-->
+    <link href="https://fonts.googleapis.com/css?family=Nunito:200,200i,300,300i,400,400i,600,600i,700,700i,800,800i,900,900i"
+          rel="stylesheet">
+
+    <title>Dashboard</title>
+    <style>
+        body {
+            display: flex;
+            margin: 0;
+        }
+        .content-container {
+            margin-left: 250px; /* Ensure this matches the sidebar width */
+            padding: 20px;
+            flex: 1;
+            display: flex;
+            justify-content: center;
+        }
+        .content {
+            width: 100%;
+            max-width: 900px; /* Adjust this to control the width of the centered content */
+        }
+    </style>
+</head>
+<body>
+<div th:replace="fragments/header.html"></div>
+<div id="wrapper" class="content-container">
+    <div class="content">
+        <!--    content-wrapper-->
+        <div id="content-wrapper" class="d-flex flex-column">
+            <div class="content">
+                <!-- Begin Page Content-->
+                <div class="container-fluid">
+                    <!-- Page heading-->
+                    <div class="d-sm-flex align-items-center justify-content-between mb-3">
+                        <h1 class="h3 mb-0 text-gray-800" style="font-weight: bold">FileManagement</h1>
+                    </div>
+                    <div class="checkbox-container" style="display: flex; flex-direction: column;">
+                        <label><input type="checkbox" id="selectAll"> Select All</label>
+                        <label><input type="checkbox" class="file-ext" value=".html">.html</label>
+                        <label><input type="checkbox" class="file-ext" value=".htm">.htm</label>
+                        <label><input type="checkbox" class="file-ext" value=".pdf">.pdf</label>
+                        <label><input type="checkbox" class="file-ext" value=".mp4">.mp4</label>
+                        <label><input type="checkbox" class="file-ext" value=".webm">.webm</label>
+                        <label><input type="checkbox" class="file-ext" value=".ogg">.ogg</label>
+                        <label><input type="checkbox" class="file-ext" value=".mp3">.mp3</label>
+                        <label><input type="checkbox" class="file-ext" value=".wav">.wav</label>
+                        <label><input type="checkbox" class="file-ext" value=".jpeg">.jpeg</label>
+                        <label><input type="checkbox" class="file-ext" value=".jpg">.jpg</label>
+                        <label><input type="checkbox" class="file-ext" value=".png">.png</label>
+                        <label><input type="checkbox" class="file-ext" value=".gif">.gif</label>
+                        <label><input type="checkbox" class="file-ext" value=".svg">.svg</label>
+                        <label><input type="checkbox" class="file-ext" value=".webp">.webp</label>
+                        <label><input type="checkbox" class="file-ext" value=".ico">.ico</label>
+                    </div>
+                    <button id="saveButton" class="btn btn-primary">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Fetch existing file extensions and set checkboxes
+        $.ajax({
+            url: '/board/admin/api/fileManagement',
+            type: 'GET',
+            success: function(response) {
+                response.forEach(function(extension) {
+                    $('input.file-ext[value="' + extension + '"]').prop('checked', true);
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+
+        $('#selectAll').click(function() {
+            $('.file-ext').prop('checked', this.checked);
+        });
+
+        $('.file-ext').click(function() {
+            if (!this.checked) {
+                $('#selectAll').prop('checked', false);
+            }
+        });
+
+        $('#saveButton').click(function() {
+            // Get selected file extensions
+            const selectedExtensions = $('.file-ext:checked').map(function() {
+                return this.value;
+            }).get();
+
+            // Send selected extensions via AJAX
+            $.ajax({
+                url: '/board/admin/api/fileManagement',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(selectedExtensions),
+                success: function(response) {
+                    alert('Selected extensions have been sent successfully.');
+                },
+                error: function(xhr, status, error) {
+                    console.error(xhr.responseText);
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
